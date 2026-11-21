@@ -93,9 +93,6 @@ input.num{width:52px;background-image:none;padding:0;-moz-appearance:textfield}
 .eng .k-sn{color:var(--n-sn)}.eng .k-t1{color:var(--n-t1)}.eng .k-ft{color:var(--n-ft)}.eng .k-bd{color:var(--n-bd)}
 .eng .stk{font-family:var(--druk);font-weight:700;font-size:1.05px;fill:currentColor;text-anchor:middle}
 #sheetWrap.dark .eng .staff{opacity:.55}
-.row.eng{isolation:isolate}
-.ext{position:absolute;left:-100vw;right:-100vw;z-index:-1;pointer-events:none;height:calc(4*var(--u) + var(--lw));background:repeating-linear-gradient(to bottom,var(--ink) 0,var(--ink) var(--lw),transparent var(--lw),transparent var(--u))}
-#sheetWrap.dark .ext{opacity:.55}
 #sheetWrap.dark .vf-stave{opacity:.45}
 .mbox{position:absolute;top:4px;bottom:4px;cursor:pointer}
 .mbox.sel{box-shadow:inset 0 0 0 1px var(--warn)}
@@ -159,7 +156,7 @@ footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding-block
 <input type="range" id="tempo" min="30" max="200" step="1" hidden>
 <div class="nowrow gut"><button class="arrow" id="sprev" aria-label="Previous bar">&larr;</button><div class="nowmid"><div class="now" id="capSec"></div><div class="indicator"><button id="pb" hidden></button><span id="capBar"></span><button id="nb" hidden></button></div></div><button class="arrow" id="snext" aria-label="Next bar">&rarr;</button></div>
 
-<main id="stage">
+<main id="stage" class="gut">
   <div id="sheetWrap" class="dark">
     <div id="count" hidden></div>
     <div id="sheet"><div id="cursor" hidden></div></div>
@@ -349,7 +346,7 @@ let notationStyle='std';
 let zoom=1, geo=[], rowsEl=[], selBar=0, colorNotes=true, rendering=false;
 function render(){
   const sheet=$('sheet'),wrap=$('sheetWrap');
-  sheet.querySelectorAll('.erow,.row,.ext,#nolib').forEach(e=>e.remove());
+  sheet.querySelectorAll('.erow,.row,#nolib').forEach(e=>e.remove());
   geo=[];rowsEl=[];
   if(!song||!song.measures.length)return;
   if(dirty)buildTimeline();
@@ -462,11 +459,6 @@ function renderEng(va,vb){
     const box=document.createElement('div');box.className='mbox';box.style.left='0';box.style.width=W+'px';box.dataset.i=t.i;div.appendChild(box);
     geo[t.i]={row:rowsEl.length,anchors,top:(SOFF-1.7)*u,h:7.4*u,box};rowsEl.push(div);
   });
-  if(its.length===1){   // run the staff lines out to both edges of the page, with the bar in the middle
-    const t=its[0],lw=Math.max(1,0.0848*u),ln=document.createElement('div');ln.className='ext';
-    ln.style.setProperty('--u',u+'px');ln.style.setProperty('--lw',lw+'px');ln.style.top=(SOFF*u-lw/2)+'px';
-    t.div.appendChild(ln);const st=t.svg.querySelector('.staff');if(st)st.style.opacity='0';   // the lines live inside the bar's own box so they always move with it
-  }
   finishRender(Math.min(sumW*u,availW));
 }
 function paintBoxes(){
