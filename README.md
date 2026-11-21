@@ -9,4 +9,4 @@ Reading new sheet music from a photo only works when the page is opened inside C
 
 ## Drum sounds
 
-The drum recordings embedded in the page are from [Virtuosity Drums](https://github.com/sfzinstruments/virtuosity_drums) by Versilian Studios and Karoryfer Samples, released under CC0. They are trimmed, mixed to mono and encoded as MP3. If they fail to decode, the page falls back to synthesized drums.
+The drum recordings embedded in the page are from [Big Rusty Drums](https://github.com/sfzinstruments/karoryfer.big-rusty-drums) by Karoryfer Samples, released under CC0. Close and overhead mics are mixed to mono, lightly saturated, trimmed and encoded as MP3. If they fail to decode, the page falls back to synthesized drums.
