@@ -209,14 +209,14 @@ function fillBar(hits,st,extra){
 const r4=a=>[a,a+1,a+2,a+3];
 function fillPage(){
   const c={chk:true};
-  return {id:'fill-page',v:3,title:'Fill Page',tempo:70,groove:true,measures:[
+  return {id:'fill-page',v:4,title:'Fill Page',tempo:70,groove:true,measures:[
     fillBar({sn:[12,13,14,15]},'RLRL',{lbl:'1 count fills'}),
     fillBar({sn:[12,13],t1:[14]},'RLR'),
     fillBar({sn:[12],t1:[13],ft:[14]},'RLR'),
     fillBar({sn:[12,14,15]},'RRL'),
     fillBar({sn:[12,14],ft:[12,14]},'BB'),
     fillBar({sn:[12],t1:[13],ft:[14,15]},'RLRL'),
-    fillBar({ft:[12],t1:[13],sn:[14,15]},''),
+    fillBar({ft:[12],t1:[13],sn:[14,15]},'RLRL'),
     fillBar({sn:[12,14,15],bd:[13]},'RFRL'),
     fillBar({sn:[12,13,15],bd:[14]},'RLFL'),
     fillBar({sn:[12],t1:[13],ft:[14],bd:[15]},'RLRF'),
@@ -287,7 +287,7 @@ function normSong(raw){
 let songs=[],song=null;
 function loadSongs(){
   try{ const s=JSON.parse(localStorage.getItem('dsp.songs')||'[]'); if(Array.isArray(s))songs=s.filter(x=>x&&Array.isArray(x.measures)&&x.measures.length) }catch(e){songs=[]}
-  songs=songs.filter(s=>s.id!=='fill-page'||s.v===3);
+  songs=songs.filter(s=>s.id!=='fill-page'||s.v===4);
   if(!songs.some(s=>s.id==='fill-page'))songs.unshift(fillPage());
   let cur=null; try{cur=localStorage.getItem('dsp.cur')}catch(e){}
   song=songs.find(s=>s.id===cur)||songs[0];
