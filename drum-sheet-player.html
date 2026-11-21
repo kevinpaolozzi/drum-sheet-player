@@ -163,8 +163,8 @@ footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding-block
 </div>
 <footer class="gut">
   <button class="chip" id="loop" aria-pressed="true">Loop</button>
-  <button class="chip" id="click" aria-pressed="true" title="Metronome click on every beat">Click</button>
-  <button class="chip" id="cin" aria-pressed="true">Count-in</button>
+  <button class="chip" id="click" aria-pressed="false" title="Metronome click on every beat">Click</button>
+  <button class="chip" id="cin" aria-pressed="false">Count-in</button>
   <button class="chip" id="groove" aria-pressed="true" title="Plays a basic beat through the rests before each fill">Beat in rests</button>
   <button class="chip" id="sheetTheme" aria-pressed="true">Dark sheet</button>
   <button class="chip" id="edit" aria-pressed="false">Edit bar</button>
@@ -513,7 +513,7 @@ function clickSnd(t,strong){tone(t,strong?1900:1400,strong?1900:1400,0.045,stron
 
 /* ---------- timeline + transport ---------- */
 let events=[],startQ=[],totalQ=0,onsets=[],dirty=true;
-let loopOn=true,loopFrom=0,loopTo=0,grooveOn=true,clickOn=true,countIn=true,editing=false;
+let loopOn=true,loopFrom=0,loopTo=0,grooveOn=true,clickOn=false,countIn=false,editing=false;
 let playing=false,baseTime=0,baseQ=0,idx=0,regS=0,regE=0,posQ=0,countEnd=0,timer=null,vis=[],bpm=70,stepPos=-1,lastRow=-1,wake=null;
 const lenQ=m=>m.ts[0]*4/m.ts[1];
 function buildTimeline(){
