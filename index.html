@@ -436,6 +436,7 @@ function renderEng(va,vb){
   for(let i=va;i<=vb;i++){
     const m=song.measures[i],div=document.createElement('div');div.className='row eng';div.innerHTML=E[m.eng];cont.appendChild(div);
     const svg=div.querySelector('svg');svg.removeAttribute('width');svg.removeAttribute('height');
+    svg.querySelectorAll('.nh').forEach(n=>svg.appendChild(n));   // noteheads on top of stems
     let bb={x:1.5,width:40};try{const b=svg.getBBox();if(b&&b.width>1)bb=b}catch(e){}
     its.push({i,m,div,svg,x0:bb.x-0.8,w:bb.width+1.6});
   }
