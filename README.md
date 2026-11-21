@@ -9,4 +9,4 @@ Reading new sheet music from a photo only works when the page is opened inside C
 
 ## Drum sounds
 
-The drum recordings embedded in the page are from [Big Rusty Drums](https://github.com/sfzinstruments/karoryfer.big-rusty-drums) by Karoryfer Samples, released under CC0. Close and overhead mics are mixed to mono, lightly saturated, trimmed and encoded as MP3. If they fail to decode, the page falls back to synthesized drums.
+The drum recordings embedded in the page are from **Naked Drums** by Wilkinson Audio, in the [SFZ port by kinwie](https://github.com/sfzinstruments/WilkinsonAudio.NakedDrums), used under the [Creative Commons Attribution 4.0 licence](https://creativecommons.org/licenses/by/4.0/). Changes made: the direct and overhead mics are mixed to mono, trimmed, faded and encoded as MP3. If the recordings fail to decode, the page falls back to synthesized drums.
