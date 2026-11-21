@@ -381,7 +381,7 @@ function render(){
         if(colorNotes)it.hits.forEach((h,j)=>{const c=dark?INST[h[0]].bright:INST[h[0]].paper;nt.setKeyStyle(j,{fillStyle:c,strokeStyle:c})});
         if(it.hits.some(h=>h[1]==='X'))nt.addModifier(new VF.Articulation('a>').setPosition(VF.Modifier.Position.ABOVE),0);
         if(it.hits.some(h=>h[1]==='o'))nt.addModifier(new VF.Articulation('ah').setPosition(VF.Modifier.Position.ABOVE),0);
-        if(it.st&&it.st!=='-'){const a=new VF.Annotation(it.st==='B'?'LR':it.st);if(goth)a.setFont('UnifrakturMaguntia, serif',15,'normal');else a.setFont('JetBrains Mono, monospace',10,'bold');a.setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM);nt.addModifier(a,0)}
+        if(it.st&&it.st!=='-'){const a=new VF.Annotation(it.st==='B'?'LR':it.st);a.setFont('Druk Wide, JetBrains Mono, sans-serif',8.5,'bold');a.setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM);nt.addModifier(a,0)}
         return nt;
       });
       const beams=[],tups=[];let run=[],lastG=-1;const tupMap=new Map();
