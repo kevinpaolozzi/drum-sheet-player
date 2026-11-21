@@ -438,11 +438,13 @@ function renderEng(va,vb){
     const {m,div,svg}=t,W=t.w*u,Hpx=VH*u;
     svg.setAttribute('viewBox',t.x0+' '+Y0+' '+t.w+' '+VH);svg.style.width=W+'px';svg.style.height=Hpx+'px';div.style.width=W+'px';
     const byStep=new Map();
-    svg.querySelectorAll('[data-s]').forEach(g=>{let b;try{b=g.getBBox()}catch(e){return}const s=+g.dataset.s,o=byStep.get(s)||{l:1e9,r:-1e9,k:null};o.l=Math.min(o.l,b.x);o.r=Math.max(o.r,b.x+b.width);if(!o.k){const c=/k-(\w+)/.exec(g.getAttribute('class')||'');if(c)o.k=c[1]}byStep.set(s,o)});
+    svg.querySelectorAll('[data-s]').forEach(g=>{let b;try{b=g.getBBox()}catch(e){return}const s=+g.dataset.s,o=byStep.get(s)||{l:1e9,r:-1e9,k:null};o.l=Math.min(o.l,b.x);o.r=Math.max(o.r,b.x+b.width);{const c=/k-(\w+)/.exec(g.getAttribute('class')||'');if(c){if(!o.k)o.k=c[1];(o.ks=o.ks||[]).push(c[1])}}byStep.set(s,o)});
     const anchors=[...byStep.entries()].sort((a,b)=>a[0]-b[0]).map(([s,o])=>({step:s,x:((o.l+o.r)/2-t.x0)*u}));
     if(!anchors.length||anchors[0].step>0)anchors.unshift({step:0,x:0});
     anchors.push({step:m.d,x:W-0.8*u});
-    byStep.forEach((o,s)=>{const c=m.st[s];if(!o.k||!c||c==='-')return;(c==='B'?['L','R']:[c]).forEach((ch,n)=>{const tx=document.createElementNS(NS,'text');tx.setAttribute('x',(o.l+o.r)/2);tx.setAttribute('y',STAFF+4+3.3+n*1.3);tx.setAttribute('class','stk k-'+o.k);tx.textContent=ch;svg.appendChild(tx)})});
+    byStep.forEach((o,s)=>{const c=m.st[s];if(!o.k||!c||c==='-')return;
+      const hs=(o.ks||[]).filter(k=>k!=='bd'&&k!=='hf').sort((a,b)=>PIECES.find(q=>q.k===a).x-PIECES.find(q=>q.k===b).x);   // left hand plays the left-most drum
+      (c==='B'?['L','R']:[c]).forEach((ch,n)=>{const tx=document.createElementNS(NS,'text');tx.setAttribute('x',(o.l+o.r)/2);tx.setAttribute('y',STAFF+4+3.3+n*1.3);tx.setAttribute('class','stk k-'+(c==='B'&&hs.length>1?(n?hs[hs.length-1]:hs[0]):o.k));tx.textContent=ch;svg.appendChild(tx)})});
     const box=document.createElement('div');box.className='mbox';box.style.left='0';box.style.width=W+'px';box.dataset.i=t.i;div.appendChild(box);
     geo[t.i]={row:rowsEl.length,anchors,top:(STAFF-Y0-1.7)*u,h:7.4*u,box};rowsEl.push(div);
   });
