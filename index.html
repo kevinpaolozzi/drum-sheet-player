@@ -489,35 +489,62 @@ function flash(hits,st,hold,dim){
 }
 
 /* ---------- sound ---------- */
-let actx=null,master=null,noiseBuf=null,openHat=null;
+let actx=null,master=null,noiseBuf=null,openHat=null,clickBus=null;
+function initAudio(c){
+  actx=c;
+  const comp=c.createDynamicsCompressor();comp.threshold.value=-12;comp.knee.value=8;comp.ratio.value=3;comp.attack.value=0.005;comp.release.value=0.12;
+  const out=c.createGain();out.gain.value=0.95;comp.connect(out);out.connect(c.destination);
+  master=c.createGain();master.gain.value=0.8;master.connect(comp);
+  clickBus=c.createGain();clickBus.gain.value=0.8;clickBus.connect(out);
+  // small room: decaying filtered noise as an impulse response
+  const sr=c.sampleRate,len=Math.floor(sr*0.6),ir=c.createBuffer(2,len,sr);
+  for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);let lp=0;for(let i=0;i<len;i++){const t=i/len,n=Math.random()*2-1;lp+=(n-lp)*(0.6-0.45*t);d[i]=lp*Math.pow(1-t,2.8)*(i<sr*0.006?0.15:1)}}
+  const conv=c.createConvolver();conv.buffer=ir;const send=c.createGain();send.gain.value=0.3;master.connect(send);send.connect(conv);conv.connect(comp);
+  noiseBuf=c.createBuffer(1,sr*2,sr);const nd=noiseBuf.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+}
 function audio(){
-  if(!actx){
-    actx=new (window.AudioContext||window.webkitAudioContext)();
-    master=actx.createGain();master.gain.value=0.8;
-    const comp=actx.createDynamicsCompressor();master.connect(comp);comp.connect(actx.destination);
-    noiseBuf=actx.createBuffer(1,actx.sampleRate,actx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-  }
+  if(!actx)initAudio(new (window.AudioContext||window.webkitAudioContext)());
   if(actx.state==='suspended')actx.resume();
   return actx;
 }
-function env(t,peak,dur){const g=actx.createGain();g.gain.setValueAtTime(Math.max(peak,0.001),t);g.gain.exponentialRampToValueAtTime(0.0008,t+dur);g.connect(master);return g}
-function tone(t,f0,f1,dur,peak,type){const o=actx.createOscillator();o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur*0.7);o.connect(env(t,peak,dur));o.start(t);o.stop(t+dur+0.03)}
-function noise(t,dur,peak,type,freq,q){const s=actx.createBufferSource();s.buffer=noiseBuf;s.loop=true;const f=actx.createBiquadFilter();f.type=type;f.frequency.value=freq;if(q)f.Q.value=q;const g=env(t,peak,dur);s.connect(f);f.connect(g);s.start(t,Math.random()*0.5);s.stop(t+dur+0.03);return g}
+function env(t,peak,dur,dest){const g=actx.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(Math.max(peak,0.0002),t+0.0015);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);g.connect(dest||master);return g}
+function tone(t,f0,f1,dur,peak,type,glide,dest){const o=actx.createOscillator();o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+(glide||dur*0.7));o.connect(env(t,peak,dur,dest));o.start(t);o.stop(t+dur+0.03)}
+function noise(t,dur,peak,type,freq,q){const s=actx.createBufferSource();s.buffer=noiseBuf;s.loop=true;const f=actx.createBiquadFilter();f.type=type;f.frequency.value=freq;if(q)f.Q.value=q;const g=env(t,peak,dur);s.connect(f);f.connect(g);s.start(t,Math.random()*1.5);s.stop(t+dur+0.03);return g}
+// cymbal body: six detuned square waves, band-limited, like struck metal rather than hiss
+function metal(t,dur,peak,mul,hp,bp){
+  const g=env(t,peak,dur),h=actx.createBiquadFilter();h.type='highpass';h.frequency.value=hp;
+  const b=actx.createBiquadFilter();b.type='bandpass';b.frequency.value=bp;b.Q.value=0.6;b.connect(h);h.connect(g);
+  [205.3,304.4,369.6,522.7,540,800].forEach(f=>{const o=actx.createOscillator();o.type='square';o.frequency.value=f*mul;o.connect(b);o.start(t);o.stop(t+dur+0.05)});
+  return g;
+}
+function drum(t,f,dur,v,stick){
+  tone(t,f*1.28,f,dur,0.9*v,'sine',0.07);          // head fundamental with a slight pitch drop
+  tone(t,f*1.59,f*1.5,dur*0.45,0.28*v,'sine',0.05); // second membrane mode
+  tone(t,f*2.14,f*2.1,dur*0.25,0.12*v,'sine',0.04);
+  noise(t,0.025,0.3*v,'bandpass',stick,0.9);        // stick on the head
+}
 function choke(t){if(openHat){try{openHat.gain.cancelScheduledValues(t);openHat.gain.setTargetAtTime(0.0001,t,0.012)}catch(e){}openHat=null}}
+const LV={bd:1,sn:1,t1:1,ft:1,hh:0.22,hf:0.2,cr:0.28,rd:0.2};
 function hit(k,ch,t,v){
-  v*=ch==='X'?1.25:ch==='g'?0.3:0.85;
+  v*=(ch==='X'?1.3:ch==='g'?0.28:0.85)*(0.93+Math.random()*0.14)*LV[k];
   switch(k){
-    case 'bd':tone(t,150,42,0.34,1.0*v);noise(t,0.02,0.2*v,'lowpass',1800);break;
-    case 'sn':noise(t,0.2,0.65*v,'highpass',1500);tone(t,225,150,0.12,0.5*v,'triangle');break;
-    case 't1':tone(t,235,150,0.3,0.85*v);noise(t,0.03,0.12*v,'bandpass',900,1);break;
-    case 'ft':tone(t,135,78,0.45,0.95*v);noise(t,0.03,0.1*v,'bandpass',500,1);break;
-    case 'hh':choke(t);if(ch==='o')openHat=noise(t,0.5,0.3*v,'highpass',6500);else noise(t,0.055,0.33*v,'highpass',7500);break;
-    case 'hf':choke(t);noise(t,0.04,0.22*v,'highpass',6000);break;
-    case 'cr':noise(t,1.5,0.45*v,'highpass',3800);noise(t,0.3,0.25*v,'bandpass',5200,0.6);break;
-    case 'rd':noise(t,0.7,0.16*v,'highpass',7000);tone(t,3100,3060,0.5,0.06*v,'square');tone(t,4670,4620,0.4,0.04*v,'square');break;
+    case 'bd':
+      tone(t,125,50,0.3,1.0*v,'sine',0.05);tone(t,62,42,0.24,0.5*v,'sine',0.08);
+      noise(t,0.012,0.4*v,'bandpass',3600,1);noise(t,0.05,0.3*v,'lowpass',320);break;
+    case 'sn':
+      tone(t,196,176,0.12,0.5*v,'triangle',0.03);tone(t,333,300,0.07,0.26*v,'sine',0.03);
+      noise(t,0.21,0.5*v,'bandpass',4800,0.45);noise(t,0.16,0.3*v,'highpass',2200);noise(t,0.03,0.5*v,'highpass',3200);break;
+    case 't1':drum(t,168,0.4,v,2600);break;
+    case 'ft':drum(t,98,0.58,v,1900);break;
+    case 'hh':choke(t);
+      if(ch==='o'){openHat=metal(t,0.6,3.2*v,1,6500,9500);noise(t,0.3,0.12*v,'highpass',8000)}
+      else{metal(t,0.07,3.4*v,1,7000,10000);noise(t,0.035,0.14*v,'highpass',8500)}break;
+    case 'hf':choke(t);metal(t,0.05,2*v,1,6500,9000);break;
+    case 'cr':metal(t,1.7,2.6*v,0.82,3200,6000);noise(t,1.9,0.3*v,'highpass',4200);noise(t,0.09,0.4*v,'bandpass',3000,0.7);break;
+    case 'rd':metal(t,1.2,1.7*v,0.9,4800,7400);tone(t,3350,3330,0.4,0.035*v,'sine');noise(t,0.012,0.22*v,'bandpass',4200,1);break;
   }
 }
-function clickSnd(t,strong){tone(t,strong?1900:1400,strong?1900:1400,0.045,strong?0.4:0.28)}
+function clickSnd(t,strong){const f=strong?1900:1400;tone(t,f,f,0.045,strong?0.4:0.28,'sine',0.04,clickBus)}
 
 /* ---------- timeline + transport ---------- */
 let events=[],startQ=[],totalQ=0,onsets=[],dirty=true;
