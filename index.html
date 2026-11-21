@@ -8,7 +8,7 @@
 <body>
 <title>Drum Sheet Player</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=UnifrakturMaguntia&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
 /* Layout: same language as Triad Trainer. Centred title, one divided control row, big Druk label,
    bar counter with arrows, the bar itself in a hairline box, line-art kit, toggles along the bottom.
@@ -126,7 +126,6 @@ body.focus header,body.focus #status,body.focus .controls{display:none}
 <div class="controls gut">
   <label><span class="lbl">Sheet</span><select id="songSel" aria-label="Sheet"></select></label>
   <label><span class="lbl">Bar</span><select id="lf" aria-label="Choose a bar"></select></label>
-  <label><span class="lbl">Notation</span><select id="styleSel" aria-label="Notation style"><option value="std">Standard</option><option value="heavy">Heavy</option><option value="hand">Handwritten</option><option value="gothic">Gothic</option></select></label>
   <label><span class="lbl">Through</span><input class="num" type="number" id="lt" min="1" value="1" aria-label="Loop through bar"></label>
   <div><span class="lbl">BPM</span><div class="row2"><button class="sq" id="bpmMinus" aria-label="Slower">&minus;</button><span id="bpm">70</span><button class="sq" id="bpmPlus" aria-label="Faster">+</button></div></div>
   <div><span class="lbl">Step</span><div class="row2"><button class="sq" id="prev" aria-label="Previous note">&larr;</button><button class="sq" id="next" aria-label="Next note">&rarr;</button></div></div>
@@ -321,7 +320,7 @@ function buildMeasure(m){
 }
 
 /* ---------- notation ---------- */
-let notationStyle='gothic';try{notationStyle=localStorage.getItem('dsp.style')||'gothic'}catch(e){}
+let notationStyle='std';
 let zoom=1, geo=[], rowsEl=[], selBar=0, colorNotes=true, rendering=false;
 function render(){
   const sheet=$('sheet'),wrap=$('sheetWrap');
@@ -636,7 +635,6 @@ $('groove').onclick=()=>{grooveOn=!grooveOn;song.groove=grooveOn;toggle('groove'
 $('click').onclick=()=>{clickOn=!clickOn;toggle('click',clickOn)};
 $('cin').onclick=()=>{countIn=!countIn;toggle('cin',countIn)};
 $('sheetTheme').onclick=()=>{const on=!$('sheetWrap').classList.contains('dark');$('sheetWrap').classList.toggle('dark',on);toggle('sheetTheme',on);try{localStorage.setItem('dsp.sheet',on?'dark':'light')}catch(e){}render()};
-$('styleSel').value=notationStyle;$('styleSel').onchange=e=>{notationStyle=e.target.value;try{localStorage.setItem('dsp.style',notationStyle)}catch(er){}render()};
 $('zi').onclick=()=>{zoom=clamp(zoom+0.1,0.5,1.5);render()};$('zo').onclick=()=>{zoom=clamp(zoom-0.1,0.5,1.5);render()};
 $('full').onclick=()=>{
   const on=!document.body.classList.contains('focus');document.body.classList.toggle('focus',on);toggle('full',on);
