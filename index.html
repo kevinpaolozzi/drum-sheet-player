@@ -321,7 +321,7 @@ function buildMeasure(m){
 }
 
 /* ---------- notation ---------- */
-let notationStyle='std';try{notationStyle=localStorage.getItem('dsp.style')||'std'}catch(e){}
+let notationStyle='gothic';try{notationStyle=localStorage.getItem('dsp.style')||'gothic'}catch(e){}
 let zoom=1, geo=[], rowsEl=[], selBar=0, colorNotes=true, rendering=false;
 function render(){
   const sheet=$('sheet'),wrap=$('sheetWrap');
