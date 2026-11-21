@@ -55,9 +55,10 @@ input.num{width:52px;background-image:none;padding:0;-moz-appearance:textfield}
 #play.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 
 .now{text-align:center;font-family:var(--druk);font-size:clamp(.8rem,min(2.3vh,3.6vw),1.3rem);font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;padding-top:clamp(12px,3vh,32px);min-height:1.2em;line-height:1.1}
-.nowrow{display:flex;justify-content:center;align-items:center;gap:clamp(.6rem,2vw,1.4rem);padding-top:clamp(12px,3vh,32px)}
+.nowrow{display:flex;justify-content:center;align-items:stretch;gap:clamp(.6rem,2vw,1.4rem);padding-top:clamp(12px,3vh,32px)}
 .nowrow .now{padding-top:0;min-width:min(56vw,21rem)}
-.nowrow .arrow{flex:none}
+.nowrow .arrow{flex:none;width:40px;height:auto;line-height:1;display:grid;place-items:center}
+.nowmid{display:flex;flex-direction:column;justify-content:center;padding:8px 0}
 .indicator{display:flex;justify-content:center;align-items:center;padding:clamp(6px,1.2vh,12px) 0 0}
 #capBar{font-size:.8rem;font-weight:500;color:var(--fg);letter-spacing:3px;text-transform:uppercase;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center}
 .arrow{width:32px;height:32px;border:1px solid var(--mute);color:var(--dim);font-size:1rem;line-height:30px;text-align:center}
@@ -144,8 +145,7 @@ footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding-block
   <div><button id="play">Play</button></div>
 </div>
 <input type="range" id="tempo" min="30" max="200" step="1" hidden>
-<div class="nowrow gut"><button class="arrow" id="sprev" aria-label="Previous bar">&larr;</button><div class="now" id="capSec"></div><button class="arrow" id="snext" aria-label="Next bar">&rarr;</button></div>
-<div class="indicator"><button id="pb" hidden></button><span id="capBar"></span><button id="nb" hidden></button></div>
+<div class="nowrow gut"><button class="arrow" id="sprev" aria-label="Previous bar">&larr;</button><div class="nowmid"><div class="now" id="capSec"></div><div class="indicator"><button id="pb" hidden></button><span id="capBar"></span><button id="nb" hidden></button></div></div><button class="arrow" id="snext" aria-label="Next bar">&rarr;</button></div>
 
 <main id="stage" class="gut">
   <div id="sheetWrap" class="dark">
