@@ -40,7 +40,17 @@ select,input.num{appearance:none;-webkit-appearance:none;background:transparent;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 4 4-4' stroke='%23777' fill='none' stroke-width='1'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center}
 select:hover,input.num:hover{border-bottom-color:var(--dim);color:var(--accent)}
 select option{background:var(--bg);color:var(--fg)}
-#songSel{max-width:210px}#lf{max-width:190px}
+.cs{position:relative;min-width:120px}
+.cs-trigger{display:flex;align-items:center;justify-content:space-between;gap:.75rem;width:100%;height:28px;border-bottom:1px solid var(--mute);color:var(--fg);font-size:.9rem;text-align:left;white-space:nowrap}
+.cs-trigger::after{content:"";width:8px;height:5px;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 4 4-4' stroke='%23777' fill='none' stroke-width='1'/%3E%3C/svg%3E") no-repeat center/contain}
+.cs-trigger:hover{border-bottom-color:var(--dim);color:var(--accent)}
+.cs.open .cs-trigger{border-bottom-color:var(--accent);color:var(--accent)}
+.cs.open .cs-trigger::after{transform:rotate(180deg)}
+.cs-options{display:none;position:absolute;top:100%;left:0;min-width:100%;background:var(--bg);border:1px solid var(--mute);z-index:100;max-height:min(46vh,340px);overflow-y:auto;scrollbar-width:thin}
+.cs.open .cs-options{display:block}
+.cs-option{padding:.4rem .6rem;font-size:.85rem;color:#8c8c8c;cursor:pointer;white-space:nowrap}
+.cs-option:hover{background:var(--accent);color:var(--bg)}
+.cs-option.selected{color:var(--accent)}
 input.num{width:52px;background-image:none;padding:0;-moz-appearance:textfield}
 .row2{display:flex;align-items:center}
 .sq{width:28px;height:28px;border:1px solid var(--mute);color:var(--dim);font-size:.9rem;line-height:26px;text-align:center}
@@ -597,8 +607,8 @@ function restart(){ const was=playing; if(was){playing=false;clearInterval(timer
 /* ---------- UI ---------- */
 function setStatus(t,warn){const s=$('status');s.textContent=t||'';s.classList.toggle('warn',!!warn)}
 function toggle(id,val){$(id).setAttribute('aria-pressed',val?'true':'false')}
-function syncLoopInputs(){const n=song.measures.length;loopFrom=clamp(loopFrom,0,n-1);loopTo=clamp(loopTo,loopFrom,n-1);const sel=$('lf');if(sel.options.length!==n||sel.dataset.song!==song.id){sel.innerHTML='';let sec='';song.measures.forEach((m,i)=>{if(m.lbl)sec=m.lbl;const o=document.createElement('option');o.value=i+1;o.textContent=String(i+1).padStart(2,'0')+(sec?'  '+sec.replace(/s$/,''):'')+(m.chk?' ?':'');sel.appendChild(o)});sel.dataset.song=song.id}$('lt').max=n;sel.value=loopFrom+1;$('lt').value=loopTo+1;paintBoxes()}
-function refreshSongList(){const s=$('songSel');s.innerHTML='';songs.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.title;s.appendChild(o)});s.value=song.id}
+function syncLoopInputs(){const n=song.measures.length;loopFrom=clamp(loopFrom,0,n-1);loopTo=clamp(loopTo,loopFrom,n-1);const sel=$('lf');if(sel.options.length!==n||sel.dataset.song!==song.id){sel.innerHTML='';let sec='';song.measures.forEach((m,i)=>{if(m.lbl)sec=m.lbl;const o=document.createElement('option');o.value=i+1;o.textContent=String(i+1).padStart(2,'0')+' - '+(sec?sec.replace(/s$/,''):'Bar '+(i+1))+(m.chk?' ?':'');sel.appendChild(o)});sel.dataset.song=song.id}$('lt').max=n;sel.value=loopFrom+1;if(sel._sync)sel._sync();$('lt').value=loopTo+1;paintBoxes()}
+function refreshSongList(){const s=$('songSel');s.innerHTML='';songs.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.title;s.appendChild(o)});s.value=song.id;if(s._sync)s._sync()}
 function openSong(s){
   if(playing)pause(); song=s;dirty=true;posQ=0;stepPos=-1;lastRow=-1;selBar=0;loopFrom=0;loopTo=0;clearLit();
   grooveOn=!!song.groove;toggle('groove',grooveOn);
@@ -664,7 +674,7 @@ $('edit').onclick=()=>{editing=!editing;toggle('edit',editing);$('editor').hidde
 function drawEditor(){
   const m=song.measures[selBar]; if(!m)return;
   $('edTitle').textContent='Bar '+(selBar+1);
-  const sel=$('edDiv'); if(![...sel.options].some(o=>+o.value===m.d)){const o=document.createElement('option');o.value=m.d;o.textContent=m.d+' steps';sel.appendChild(o)} sel.value=m.d;
+  const sel=$('edDiv'); if(![...sel.options].some(o=>+o.value===m.d)){const o=document.createElement('option');o.value=m.d;o.textContent=m.d+' steps';sel.appendChild(o)} sel.value=m.d;if(sel._sync)sel._sync();
   $('edOk').hidden=!m.chk;
   const n=m.d/groupsOf(m.ts).count,tb=$('grid');tb.innerHTML='';
   [...ORDER].reverse().concat(['st']).forEach(k=>{
@@ -756,6 +766,21 @@ $('file').onchange=async e=>{
 
 /* ---------- start ---------- */
 try{if(localStorage.getItem('dsp.sheet')==='light'){$('sheetWrap').classList.remove('dark');toggle('sheetTheme',false)}}catch(e){}
+function enhance(sel){
+  const wrap=document.createElement('div');wrap.className='cs';sel.parentNode.insertBefore(wrap,sel);wrap.appendChild(sel);sel.hidden=true;
+  const trig=document.createElement('button');trig.type='button';trig.className='cs-trigger';trig.setAttribute('aria-haspopup','listbox');trig.setAttribute('aria-label',sel.getAttribute('aria-label')||'Choose');
+  const list=document.createElement('div');list.className='cs-options';list.setAttribute('role','listbox');wrap.append(trig,list);
+  const sync=()=>{const o=sel.options[sel.selectedIndex];trig.textContent=o?o.textContent:''};
+  const closeAll=()=>document.querySelectorAll('.cs.open').forEach(w=>w.classList.remove('open'));
+  trig.onclick=e=>{e.stopPropagation();const was=wrap.classList.contains('open');closeAll();if(was)return;
+    list.innerHTML='';[...sel.options].forEach((o,i)=>{const d=document.createElement('div');d.className='cs-option'+(i===sel.selectedIndex?' selected':'');d.setAttribute('role','option');d.textContent=o.textContent;d.dataset.i=i;list.appendChild(d)});
+    wrap.classList.add('open');const cur=list.querySelector('.selected');if(cur)list.scrollTop=Math.max(0,cur.offsetTop-list.clientHeight/2)};
+  list.onclick=e=>{e.stopPropagation();const d=e.target.closest('.cs-option');if(!d)return;sel.selectedIndex=+d.dataset.i;closeAll();sync();sel.dispatchEvent(new Event('change'))};
+  sel._sync=sync;sync();
+}
+document.addEventListener('click',()=>document.querySelectorAll('.cs.open').forEach(w=>w.classList.remove('open')));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.cs.open').forEach(w=>w.classList.remove('open'))});
+['songSel','lf','edDiv'].forEach(id=>enhance($(id)));
 buildKit();loadSongs();openSong(song);syncLoopInputs();
 })();
 </script>
